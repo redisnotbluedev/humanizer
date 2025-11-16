@@ -18,11 +18,11 @@ generator = AsyncOpenAI(
 	timeout=60.0
 )
 
-async def api_call_with_backoff(coro, max_retries=5):
+async def api_call_with_backoff(coro_func, max_retries=5):
 	"""Execute an API call with exponential backoff for rate limits"""
 	for attempt in range(max_retries):
 		try:
-			return await coro
+			return await coro_func()
 		except RateLimitError as e:
 			if attempt == max_retries - 1:
 				raise
@@ -195,14 +195,14 @@ async def main():
 					
 					rewrite_tasks.append(
 						api_call_with_backoff(
-							generator.chat.completions.create(
+							lambda s=sentence, t=temp, ct=current_text, p=prompt, ps=previous_score, hc=history_context, sc=score_context, fh=failure_history, strat=strategy: generator.chat.completions.create(
 								messages=[
 									{
 										"role": "system",
-										"content": f"""{prompt}
+										"content": f"""{p}
 
 CURRENT TASK:
-Rewrite this flagged sentence. Detection score: {previous_score:.1f}%
+Rewrite this flagged sentence. Detection score: {ps:.1f}%
 
 DETECTED ISSUES:
 - AI-typical patterns in phrasing
@@ -213,22 +213,22 @@ YOUR GOAL:
 Rewrite to match a human writing, not an AI mimicking its tone.
 Keep the formality EXACTLY the same, but make the execution less robotic.
 
-{score_context}
+{sc}
 
-{history_context if history_context else ""}
+{hc if hc else ""}
 
-{failure_history if failure_history else ""}
+{fh if fh else ""}
 
-STRATEGY: {strategy}
+STRATEGY: {strat}
 
 Output ONLY the rewritten sentence."""
 									},
 									{
 										"role": "user",
-										"content": f"Full text:\n{current_text}\n\nRewrite:\n{sentence}"
+										"content": f"Full text:\n{ct}\n\nRewrite:\n{s}"
 									}
 								],
-								temperature=temp,
+								temperature=t,
 								top_p=0.95,
 								model="gpt-4o",
 								max_tokens=max_tokens
