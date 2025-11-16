@@ -8,7 +8,7 @@ ESSAY_FILE = "essay.txt"
 PROMPT_FILE = "prompt.txt"
 CHOICES = 7
 MAX_ROLLBACKS = 3
-TARGET_SCORE = 10
+TARGET_SCORE = 30
 
 checker = AIChecker()
 generator = AsyncOpenAI(
