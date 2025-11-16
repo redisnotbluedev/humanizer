@@ -59,7 +59,8 @@ class AIChecker:
 						"Referer": "https://www.zerogpt.com/",
 						"Origin": "https://www.zerogpt.com"
 					},
-					timeout=aiohttp.ClientTimeout(total=30)
+					timeout=aiohttp.ClientTimeout(total=30),
+					ssl=False
 				)
 				
 				if response.status == 429:
