@@ -3,7 +3,7 @@ import aiohttp, asyncio
 class AIChecker:
 	def __init__(self):
 		self.session = None
-		self.providers = [self.zerogpt, self.originality]
+		self.providers = [self.zerogpt]
 	
 	async def _ensure_session(self):
 		if self.session is None:

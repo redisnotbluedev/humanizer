@@ -7,7 +7,7 @@ dotenv.load_dotenv()
 ESSAY_FILE = "essay.txt"
 PROMPT_FILE = "prompt.txt"
 CHOICES = 7
-MAX_ROUNDS = 10
+MAX_ROLLBACKS = 3
 TARGET_SCORE = 10
 
 checker = AIChecker()
@@ -124,7 +124,7 @@ async def main():
 		best_ever_text = current_text
 		best_ever_score = previous_score
 		best_ever_round = 0
-		consecutive_failures = 0
+		consecutive_rollbacks = 0
 		failure_history = ""
 		
 		# Track score history
@@ -132,7 +132,8 @@ async def main():
 		
 		print(f"Initial score: {previous_score:.2f}% ({len(current_fake_sentences)} flagged sentences)")
 		
-		for round_num in range(MAX_ROUNDS):
+		round_num = 0
+		while True:
 			print(f"\n{'='*50}")
 			print(f"Round {round_num + 1}")
 			print(f"{'='*50}")
@@ -143,6 +144,10 @@ async def main():
 			
 			if previous_score <= TARGET_SCORE:
 				print(f"✓ Target score reached!")
+				break
+			
+			if consecutive_rollbacks >= MAX_ROLLBACKS:
+				print(f"\n✗ Maximum consecutive rollbacks ({MAX_ROLLBACKS}) reached. Stopping.")
 				break
 			
 			# Adjust strategy based on score
@@ -157,7 +162,7 @@ async def main():
 				strategy = "Make subtle stylistic adjustments to reduce AI patterns."
 			
 			# Increase temperature more aggressively after failure
-			temp_boost = 0.2 * consecutive_failures
+			temp_boost = 0.2 * consecutive_rollbacks
 			temp_min += temp_boost
 			temp_max += temp_boost
 			
@@ -295,16 +300,17 @@ Output ONLY the rewritten sentence."""
 				best_ever_text = best_candidate["text"]
 				best_ever_score = best_result["score"]
 				best_ever_round = round_num + 1
-				consecutive_failures = 0
+				consecutive_rollbacks = 0
 				failure_history = ""
 				
 				print(f"\n✓ New best: {best_ever_score:.1f}% (round {best_ever_round})")
 			else:
 				# Actual regression
-				consecutive_failures += 1
+				consecutive_rollbacks += 1
 				
 				print(f"\n⚠ Round degraded quality: {previous_score:.1f}% → {best_result['score']:.1f}%")
 				print(f"  Rolling back to round {best_ever_round} state ({best_ever_score:.1f}%)")
+				print(f"  Consecutive rollbacks: {consecutive_rollbacks}/{MAX_ROLLBACKS}")
 				
 				# ROLLBACK
 				current_text = best_ever_text
@@ -323,10 +329,7 @@ These rewrites FAILED and made detection worse. Learn from this.
 DO NOT repeat similar patterns. Try fundamentally different approaches.
 """
 				
-				if consecutive_failures >= 2:
-					print(f"\n✗ Two consecutive failed rounds. Stopping.")
-					break
-				
+				round_num += 1
 				continue  # Try again with rolled-back state
 			
 			# Update current state
@@ -335,6 +338,8 @@ DO NOT repeat similar patterns. Try fundamentally different approaches.
 			current_fake_sentences = best_result["fake_sentences"]
 			
 			print(f"\nRound result: {previous_score:.1f}% ({len(current_fake_sentences)} flagged)")
+			
+			round_num += 1
 		
 		# At the end, use best_ever_text, not current_text
 		print(f"\n{'='*50}")
