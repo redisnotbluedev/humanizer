@@ -1,4 +1,4 @@
-import os, random, asyncio, dotenv
+import os, random, asyncio, dotenv, httpx
 from openai import AsyncOpenAI, APIError, RateLimitError, APIConnectionError
 from aichecker import AIChecker
 
@@ -15,7 +15,8 @@ generator = AsyncOpenAI(
 	base_url="https://api.mapleai.de/v1",
 	api_key=os.getenv("API_KEY"),
 	max_retries=5,
-	timeout=60.0
+	timeout=60.0,
+	http_client=httpx.AsyncClient(verify=False)
 )
 
 async def api_call_with_backoff(coro_func, max_retries=5):
