@@ -151,10 +151,10 @@ async def main():
 				strategy = "Try completely different phrasing, sentence structure, and vocabulary."
 			elif previous_score > 50:
 				temp_min, temp_max = 1.0, 1.3
-				strategy = "Make substantial changes while keeping the core meaning."
+				#strategy = "Make substantial changes while keeping the core meaning."
 			else:
 				temp_min, temp_max = 0.9, 1.1
-				strategy = "Make subtle stylistic adjustments to reduce AI patterns."
+				#strategy = "Make subtle stylistic adjustments to reduce AI patterns."
 			
 			# Increase temperature more aggressively after failure
 			temp_boost = 0.2 * consecutive_failures
