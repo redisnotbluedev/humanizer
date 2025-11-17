@@ -236,7 +236,7 @@ Output ONLY the rewritten sentence."""
 								],
 								temperature=t,
 								top_p=0.95,
-								model="llama-3.3-70b-instruct",
+								model="mercury",
 								max_tokens=max_tokens
 							)
 						)
