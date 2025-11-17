@@ -236,7 +236,7 @@ Output ONLY the rewritten sentence."""
 								],
 								temperature=t,
 								top_p=0.95,
-								model="gemini-2.5-flash",
+								model="mistral-saba",
 								max_tokens=max_tokens
 							)
 						)
