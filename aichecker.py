@@ -73,7 +73,15 @@ class AIChecker:
 				
 				response.raise_for_status()
 				data = await response.json()
-
+				
+				if not data or "data" not in data:
+					if attempt < max_retries - 1:
+						delay = base_delay * (2 ** attempt)
+						await asyncio.sleep(delay)
+						continue
+					else:
+						return {"status": "failed"}
+	
 				ai_sentences = data["data"]["h"]
 				human_sentences = data["data"].get("sentences", [])
 
@@ -89,7 +97,7 @@ class AIChecker:
 					"text": text
 				}
 
-			except (aiohttp.ClientError, asyncio.TimeoutError, KeyError) as e:
+			except (aiohttp.ClientError, asyncio.TimeoutError, KeyError):
 				if attempt < max_retries - 1:
 					delay = base_delay * (2 ** attempt)
 					await asyncio.sleep(delay)
@@ -117,9 +125,12 @@ class AIChecker:
 					timeout=aiohttp.ClientTimeout(total=30)
 				)
 
-				content_type = resp.headers.get('Content-Type', '')
+				resp.raise_for_status()
+				data = await resp.json()
 				
-				if resp.status == 429 or 'text/html' in content_type:
+				if not data:
+					if attempt < max_retries - 1:
+				if not data:
 					if attempt < max_retries - 1:
 						delay = base_delay * (2 ** attempt)
 						await asyncio.sleep(delay)
@@ -127,12 +138,7 @@ class AIChecker:
 					else:
 						return {"status": "failed"}
 				
-				resp.raise_for_status()
-				data = await resp.json()
-				
 				blocks = data.get("blocks", [])
-				if not blocks:
-					return {"status": "failed"}
 				
 				total_ai_score = 0
 				sentence_count = 0
