@@ -130,8 +130,6 @@ class AIChecker:
 				
 				if not data:
 					if attempt < max_retries - 1:
-				if not data:
-					if attempt < max_retries - 1:
 						delay = base_delay * (2 ** attempt)
 						await asyncio.sleep(delay)
 						continue
