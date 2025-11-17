@@ -81,9 +81,18 @@ class AIChecker:
 						continue
 					else:
 						return {"status": "failed"}
+				
+				data_obj = data.get("data")
+				if not data_obj or "h" not in data_obj:
+					if attempt < max_retries - 1:
+						delay = base_delay * (2 ** attempt)
+						await asyncio.sleep(delay)
+						continue
+					else:
+						return {"status": "failed"}
 	
-				ai_sentences = data["data"]["h"]
-				human_sentences = data["data"].get("sentences", [])
+				ai_sentences = data_obj["h"]
+				human_sentences = data_obj.get("sentences", [])
 
 				sentences = []
 				sentences.extend([{"text": s.strip(), "score": 100} for s in ai_sentences])
